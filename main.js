@@ -18,9 +18,11 @@ function decodeName(str){
 }
 
 
-const students =
-[...document.querySelectorAll(".sg-student-link")]
-.map(link => {
+const links = [...document.querySelectorAll(".sg-student-link")];
+
+console.log("LINKS:", links.length);
+
+const students = links.map(link => {
 
     const id = link.getAttribute("studentid");
     const name = link.textContent.trim();
