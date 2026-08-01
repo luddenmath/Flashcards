@@ -399,7 +399,7 @@ alert("NEW VERSION LOADED");
 
     function renderFlash() {
 
-
+console.log("NEW RENDER FLASH RUNNING");
         const box =
             document.getElementById("sfContent");
 
