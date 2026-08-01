@@ -488,7 +488,7 @@ console.log("NAME BEFORE:", name.textContent);
 console.log("CURRENT NAME:", current.name);
 
 
-if(name.textContent==="?"){
+if(name.textContent.trim()==="?"){
 
     console.log("REVEALING NAME");
 
