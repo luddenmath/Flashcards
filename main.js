@@ -340,8 +340,9 @@ if(!deck.length){
 
 current = deck.pop();
 
-flipped=false;
+console.log("CURRENT:", current);
 
+flipped=false;
 
 if(mode==="flash")
     renderFlash();
@@ -437,8 +438,9 @@ list.appendChild(item);
 
 }
 
-
 function renderFlash(){
+
+console.log("RENDER FLASH:", current);
 
 const box=document.getElementById("sfContent");
 
@@ -481,15 +483,25 @@ card.querySelector("#removeStudent");
 
 card.onclick=()=>{
 
+console.log("CARD CLICKED");
+console.log("NAME BEFORE:", name.textContent);
+console.log("CURRENT NAME:", current.name);
+
 
 if(name.textContent==="?"){
+
+    console.log("REVEALING NAME");
 
     name.textContent=current.name;
 
     removeBtn.style.display="block";
 
+    console.log("REMOVE BUTTON DISPLAY:", removeBtn.style.display);
+
 }
 else{
+
+    console.log("MOVING NEXT");
 
     total++;
 
@@ -502,6 +514,9 @@ else{
 
 
 removeBtn.onclick=(e)=>{
+
+console.log("REMOVE CLICKED");
+console.log("REMOVING:", current);
 
 
 e.stopPropagation();
