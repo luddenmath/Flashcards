@@ -1,4 +1,4 @@
-
+(()=>{
 
 if(window.studentFlashcardOpen){
     document.getElementById("studentFlashcardOverlay")?.remove();
@@ -1383,4 +1383,4 @@ window.studentFlashcardOpen=false;
 
 reset();
 
-
+})();
