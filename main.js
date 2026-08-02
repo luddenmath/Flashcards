@@ -1,5 +1,5 @@
 (async function(){
-
+ 
     if(sessionStorage.getItem("flashcardReturn")){
     sessionStorage.removeItem("flashcardReturn");
 }
