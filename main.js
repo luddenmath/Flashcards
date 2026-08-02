@@ -1,5 +1,9 @@
 (async function(){
 
+    if(sessionStorage.getItem("flashcardReturn")){
+    sessionStorage.removeItem("flashcardReturn");
+}
+
 if(window.studentFlashcardOpen){
     document.getElementById("studentFlashcardOverlay")?.remove();
     window.studentFlashcardOpen=false;
@@ -58,26 +62,12 @@ async function getStudents() {
     if(isNaN(choice) || choice<1 || choice>classes.length)
         return [];
 
-    const html = await fetch(classes[choice-1].url,{
-        credentials:"same-origin"
-    }).then(r=>r.text());
+  // Navigate to selected class
+sessionStorage.setItem("flashcardReturn", "true");
 
-    const doc = new DOMParser().parseFromString(html,"text/html");
+window.location.href = classes[choice-1].url;
 
-    return [...doc.querySelectorAll(".sg-student-link")]
-        .map(link=>({
-
-            id:link.getAttribute("studentid"),
-
-            name:link.textContent.trim(),
-
-            photo:
-            "/TAC/StudentDetailsDrawer/GetStudentPhoto?studentId="+
-            encodeURIComponent(link.getAttribute("studentid"))
-
-        }))
-        .filter(s=>s.id && s.name && !/^\d+$/.test(s.name))
-        .sort((a,b)=>a.name.localeCompare(b.name));
+return [];
 
 }
 
