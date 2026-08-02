@@ -1,5 +1,5 @@
 (async function(){
- 
+ //2
     if(sessionStorage.getItem("flashcardReturn")){
     sessionStorage.removeItem("flashcardReturn");
 }
@@ -64,6 +64,7 @@ async function getStudents() {
 
   // Navigate to selected class
 sessionStorage.setItem("flashcardReturn", "true");
+sessionStorage.setItem("flashcardClass", classes[choice-1].url);
 
 window.location.href = classes[choice-1].url;
 
