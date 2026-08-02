@@ -749,6 +749,7 @@ const studentsForGame = shuffle([...students]);
 box.innerHTML=`
 
 <div id="matchWrapper" style="
+position:relative;
 display:flex;
 height:100%;
 width:100%;
@@ -833,15 +834,20 @@ Check Answers
 
 
 <div id="matchMissed"
-
 style="
 display:none;
-cursor:grab;
+position:absolute;
+right:10px;
+top:10px;
 width:220px;
+max-height:80%;
 background:white;
 color:black;
 padding:10px;
 overflow:auto;
+z-index:10;
+border-radius:8px;
+box-shadow:0 5px 15px black;
 ">
 
 <b>Incorrect</b>
@@ -991,12 +997,18 @@ position:absolute;
 bottom:0;
 left:0;
 width:100%;
+height:50%;
+box-sizing:border-box;
 background:white;
 color:black;
-padding:4px;
+padding:2px;
 display:none;
 text-align:center;
-font-size:clamp(10px,1.2vw,18px);
+overflow:hidden;
+font-size:clamp(8px,1vw,16px);
+align-items:center;
+justify-content:center;
+line-height:1.1;
 ">
 
 </div>
@@ -1215,7 +1227,7 @@ cell.querySelector(".matchLabel");
 
 label.innerHTML="";
 
-label.style.display="none";
+label.style.display="flex";
 
 
 
