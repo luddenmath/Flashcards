@@ -21,40 +21,56 @@ function decodeName(str){
 let students=[];
 
 
-/* ================= CLASSES ================= */
+/* ================= CLASS DETECTION ================= */
 
-const classes =
-[...document.querySelectorAll('a[href*="/TAC/ClassRoster?SectionKey="]')]
-.map(a=>{
-
-    const url = new URL(a.href);
-
-    return {
-
-        name:a.textContent.trim(),
-
-        period:
-        url.searchParams.get("Periods") || "",
-
-        url:a.href
-
-    };
-
-});
+let selectedClasses = [];
 
 
-if(!classes.length){
+const classLinks =
+[...document.querySelectorAll('a[href*="/TAC/ClassRoster?SectionKey="]')];
+
+
+if(classLinks.length){
+
+    const classes =
+    classLinks.map(a=>{
+
+        const url = new URL(a.href);
+
+        return {
+
+            name:a.textContent.trim(),
+
+            period:
+            url.searchParams.get("Periods") || "",
+
+            url:a.href
+
+        };
+
+    });
+
+
+    selectedClasses =
+    await chooseClasses(classes);
+
+
+}
+else if(location.href.includes("/TAC/ClassRoster")){
+
+    selectedClasses = [{
+        name:document.title,
+        period:"",
+        url:location.href
+    }];
+
+}
+else{
 
     alert("No classes found.");
     return;
 
 }
-
-
-/* ================= CLASS PICKER ================= */
-
-const selectedClasses =
-await chooseClasses(classes);
 
 
 if(!selectedClasses.length){
