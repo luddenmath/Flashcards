@@ -1,5 +1,5 @@
 (async function(){
-//10
+//11
 if(window.studentFlashcardOpen){
     document.getElementById("studentFlashcardOverlay")?.remove();
     window.studentFlashcardOpen=false;
@@ -1097,7 +1097,10 @@ imagesDiv.appendChild(cell);
 
 requestAnimationFrame(()=>{
 
-const cols = 15;
+const cols = Math.min(
+    5 * selectedClasses.length,
+    20
+);
 
 const rows = Math.ceil(
     studentsForGame.length / cols
