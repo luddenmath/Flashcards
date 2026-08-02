@@ -1,5 +1,5 @@
 (async function(){
-//8
+//9
 if(window.studentFlashcardOpen){
     document.getElementById("studentFlashcardOverlay")?.remove();
     window.studentFlashcardOpen=false;
@@ -64,92 +64,7 @@ if(!selectedClasses.length){
 }
 
 
-/* ================= LOAD STUDENTS ================= */
-
-for(const cls of selectedClasses){
-
-    const roster =
-    await getClassStudents(cls.url);
-
-    students.push(...roster);
-
-}
-
-
-/* remove duplicates */
-
-students =
-[...new Map(
-    students.map(s=>[s.id,s])
-).values()];
-
-
-
-
-console.log("STUDENTS:",students);
-
-
-    async function getClassStudents(url){
-
-const html =
-await $.get(url);
-
-
-const start =
-html.indexOf(
-"SunGard.Tac.ClassRoster.Init"
-);
-
-
-const end =
-html.indexOf(");",start);
-
-
-
-let text =
-html.substring(start,end+2)
-.replace(
-/^SunGard\.Tac\.ClassRoster\.Init\(/,
-""
-)
-.replace(/\);$/,"");
-
-
-
-let args=[];
-
-eval("args=["+text+"]");
-
-
-return args[3]
-.map(s=>({
-
-id:s.StudentId,
-
-name:decodeName(
-s.StudentNameLastFirst
-),
-
-photo:
-"/TAC/StudentDetailsDrawer/GetStudentPhoto?studentId="
-+encodeURIComponent(s.StudentId)
-
-}))
-
-.filter(s=>s.id);
-
-
-}
-
-/* ================= PRELOAD ================= */
-
-students.forEach(s=>{
-    const img=new Image();
-    img.src=s.photo;
-});
-
-
-/* ================= STYLE ================= */
+    /* ================= STYLE ================= */
 function chooseClasses(classes){
 
 return new Promise(resolve=>{
@@ -426,6 +341,103 @@ display:none;
 `;
 
 document.body.appendChild(overlay);
+document.getElementById("sfContent").innerHTML = `
+<div class="sfQuestion">
+Loading students...
+</div>
+`;
+
+
+/* ================= LOAD STUDENTS ================= */
+
+(async ()=>{
+
+for(const cls of selectedClasses){
+
+    const roster =
+    await getClassStudents(cls.url);
+
+    students.push(...roster);
+
+}
+
+
+students =
+[...new Map(
+    students.map(s=>[s.id,s])
+).values()];
+
+
+console.log("STUDENTS:",students);
+
+
+studySet=[...students];
+
+reset();
+
+
+})();
+
+
+
+
+console.log("STUDENTS:",students);
+
+
+    async function getClassStudents(url){
+
+const html =
+await $.get(url);
+
+
+const start =
+html.indexOf(
+"SunGard.Tac.ClassRoster.Init"
+);
+
+
+const end =
+html.indexOf(");",start);
+
+
+
+let text =
+html.substring(start,end+2)
+.replace(
+/^SunGard\.Tac\.ClassRoster\.Init\(/,
+""
+)
+.replace(/\);$/,"");
+
+
+
+let args=[];
+
+eval("args=["+text+"]");
+
+
+return args[3]
+.map(s=>({
+
+id:s.StudentId,
+
+name:decodeName(
+s.StudentNameLastFirst
+),
+
+photo:
+"/TAC/StudentDetailsDrawer/GetStudentPhoto?studentId="
++encodeURIComponent(s.StudentId)
+
+}))
+
+.filter(s=>s.id);
+
+
+}
+
+
+
 
 
 
@@ -612,7 +624,7 @@ box.innerHTML=`
 
 <div class="sfCard">
 
-<img src="${current.photo}">
+<img loading="lazy" src="${current.photo}">
 
 <div class="sfName">
 ?
@@ -945,7 +957,8 @@ background:#222;
 
 cell.innerHTML=`
 
-<img src="${student.photo}"
+<img loading="lazy"
+src="${student.photo}"
 
 style="
 width:100%;
@@ -1333,7 +1346,8 @@ height:55px;
 id="sfAnswerName">
 </div>
 
-<img style="
+<img loading="lazy"
+style="
 width:350px;
 height:350px;
 object-fit:cover;
@@ -1443,7 +1457,8 @@ const box=document.getElementById("sfContent");
 
 box.innerHTML=`
 
-<img style="
+<img loading="lazy"
+style="
 width:350px;
 height:350px;
 object-fit:cover;
@@ -1560,8 +1575,6 @@ window.studentFlashcardOpen=false;
 };
 
 
-
-reset();
 
 
 })();
