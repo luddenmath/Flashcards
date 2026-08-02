@@ -1,5 +1,5 @@
 (function(){
-//6 
+//7 
 if(window.studentFlashcardOpen){
     document.getElementById("studentFlashcardOverlay")?.remove();
     window.studentFlashcardOpen=false;
@@ -22,14 +22,26 @@ let students=[];
 
 
 /*
-Find roster data embedded in page
+Pull roster page
 */
 
-const pageHTML = document.documentElement.innerHTML;
+const rosterURL =
+"/TAC/ClassRoster" + window.location.search;
+
+
+const html =
+await fetch(rosterURL)
+.then(r=>r.text());
+
+
+console.log("Roster page length:", html.length);
 
 
 const start =
-pageHTML.indexOf("SunGard.Tac.ClassRoster.Init(");
+html.indexOf("SunGard.Tac.ClassRoster.Init(");
+
+
+console.log("Init position:", start);
 
 
 if(start === -1){
@@ -41,12 +53,8 @@ if(start === -1){
 
 
 const after =
-pageHTML.substring(start);
+html.substring(start);
 
-
-/*
-Find first array after Init(
-*/
 
 const arrayStart =
 after.indexOf("[");
@@ -74,11 +82,9 @@ for(let i=arrayStart;i<after.length;i++){
 
 
     if(c==="\"" || c==="'"){
-
         inString=true;
         quote=c;
         continue;
-
     }
 
 
@@ -102,60 +108,36 @@ for(let i=arrayStart;i<after.length;i++){
 }
 
 
-
-try{
-
-    const rosterJSON =
-        after.substring(arrayStart,end);
-
-
-    const roster =
-        JSON.parse(rosterJSON);
+const roster =
+JSON.parse(
+    after.substring(arrayStart,end)
+);
 
 
 
-    students =
-        roster.map(s=>({
+students =
+roster.map(s=>({
 
-            id:s.StudentId,
+    id:s.StudentId,
 
-            name:
-            decodeName(
-                s.StudentNameLastFirst
-            ),
+    name:
+    decodeName(
+        s.StudentNameLastFirst
+    ),
 
-            photo:
-            "/TAC/StudentDetailsDrawer/GetStudentPhoto?studentId=" +
-            encodeURIComponent(s.StudentId)
+    photo:
+    "/TAC/StudentDetailsDrawer/GetStudentPhoto?studentId=" +
+    encodeURIComponent(s.StudentId)
 
-        }))
-        .filter(s=>s.id && s.name)
-        .sort((a,b)=>
-            a.name.localeCompare(b.name)
-        );
-
-
-}
-catch(e){
-
-    console.error(e);
-    alert("Could not parse roster");
-
-}
+}))
+.filter(s=>s.id && s.name)
+.sort((a,b)=>
+    a.name.localeCompare(b.name)
+);
 
 
 
-console.log("ROSTER:",students);
-
-
-
-if(!students.length){
-
-    alert("No students found");
-
-    return;
-
-}
+console.log("STUDENTS:",students);
 
 
 /* ================= PRELOAD ================= */
