@@ -1,5 +1,5 @@
 (async function(){
-//7 
+//8
 if(window.studentFlashcardOpen){
     document.getElementById("studentFlashcardOverlay")?.remove();
     window.studentFlashcardOpen=false;
@@ -21,124 +21,125 @@ function decodeName(str){
 let students=[];
 
 
-/*
-Pull roster page
-*/
+/* ================= CLASSES ================= */
 
-const rosterURL =
-"/TAC/ClassRoster" + window.location.search;
+const classes =
+[...document.querySelectorAll('a[href*="/TAC/ClassRoster?SectionKey="]')]
+.map(a=>{
+
+    const url = new URL(a.href);
+
+    return {
+
+        name:a.textContent.trim(),
+
+        period:
+        url.searchParams.get("Periods") || "",
+
+        url:a.href
+
+    };
+
+});
 
 
-const html =
-await fetch(rosterURL)
-.then(r=>r.text());
+if(!classes.length){
 
-
-console.log("Roster page length:", html.length);
-
-
-const start =
-html.indexOf("SunGard.Tac.ClassRoster.Init(");
-
-
-console.log("Init position:", start);
-
-
-if(start === -1){
-
-    alert("Could not find roster data");
+    alert("No classes found.");
     return;
 
 }
 
 
-const after =
-html.substring(start);
+/* ================= CLASS PICKER ================= */
+
+const selectedClasses =
+await chooseClasses(classes);
 
 
-const arrayStart =
-after.indexOf("[");
+if(!selectedClasses.length){
 
-
-let depth=0;
-let end=-1;
-let inString=false;
-let quote="";
-
-
-for(let i=arrayStart;i<after.length;i++){
-
-    const c=after[i];
-
-
-    if(inString){
-
-        if(c===quote && after[i-1]!=="\\"){
-            inString=false;
-        }
-
-        continue;
-    }
-
-
-    if(c==="\"" || c==="'"){
-        inString=true;
-        quote=c;
-        continue;
-    }
-
-
-    if(c==="[")
-        depth++;
-
-
-    if(c==="]"){
-
-        depth--;
-
-        if(depth===0){
-
-            end=i+1;
-            break;
-
-        }
-
-    }
+    return;
 
 }
 
 
-const roster =
-JSON.parse(
-    after.substring(arrayStart,end)
-);
+/* ================= LOAD STUDENTS ================= */
+
+for(const cls of selectedClasses){
+
+    const roster =
+    await getClassStudents(cls.url);
+
+    students.push(...roster);
+
+}
 
 
+/* remove duplicates */
 
 students =
-roster.map(s=>({
+[...new Map(
+    students.map(s=>[s.id,s])
+).values()];
 
-    id:s.StudentId,
-
-    name:
-    decodeName(
-        s.StudentNameLastFirst
-    ),
-
-    photo:
-    "/TAC/StudentDetailsDrawer/GetStudentPhoto?studentId=" +
-    encodeURIComponent(s.StudentId)
-
-}))
-.filter(s=>s.id && s.name)
-.sort((a,b)=>
-    a.name.localeCompare(b.name)
-);
 
 
 
 console.log("STUDENTS:",students);
 
+
+    async function getClassStudents(url){
+
+const html =
+await $.get(url);
+
+
+const start =
+html.indexOf(
+"SunGard.Tac.ClassRoster.Init"
+);
+
+
+const end =
+html.indexOf(");",start);
+
+
+
+let text =
+html.substring(start,end+2)
+.replace(
+/^SunGard\.Tac\.ClassRoster\.Init\(/,
+""
+)
+.replace(/\);$/,"");
+
+
+
+let args=[];
+
+eval("args=["+text+"]");
+
+
+return args[3]
+.map(s=>({
+
+id:s.StudentId,
+
+name:decodeName(
+s.StudentNameLastFirst
+),
+
+photo:
+"/TAC/StudentDetailsDrawer/GetStudentPhoto?studentId="
++encodeURIComponent(s.StudentId)
+
+}))
+
+.filter(s=>s.id);
+
+
+}
 
 /* ================= PRELOAD ================= */
 
@@ -149,7 +150,80 @@ students.forEach(s=>{
 
 
 /* ================= STYLE ================= */
+function chooseClasses(classes){
 
+return new Promise(resolve=>{
+
+
+const box=document.createElement("div");
+
+box.style.cssText=`
+position:fixed;
+top:50%;
+left:50%;
+transform:translate(-50%,-50%);
+background:white;
+color:black;
+padding:20px;
+z-index:1000001;
+max-height:80vh;
+overflow:auto;
+`;
+
+
+box.innerHTML="<h3>Select Classes</h3>";
+
+
+classes.forEach((c,i)=>{
+
+const label=document.createElement("label");
+
+label.style.display="block";
+
+label.innerHTML=`
+
+<input type="checkbox" value="${i}">
+${c.period} - ${c.name}
+
+`;
+
+box.appendChild(label);
+
+});
+
+
+const btn=document.createElement("button");
+
+btn.textContent="Load";
+
+
+btn.onclick=()=>{
+
+const selected =
+[...box.querySelectorAll("input:checked")]
+.map(x=>classes[x.value]);
+
+
+box.remove();
+
+resolve(selected);
+
+};
+
+
+box.appendChild(btn);
+
+document.body.appendChild(box);
+
+
+});
+
+}
+
+
+
+
+    
 const style=document.createElement("style");
 
 style.textContent=`
