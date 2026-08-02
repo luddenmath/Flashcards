@@ -1,5 +1,5 @@
 (function(){
-//6
+//6 
 if(window.studentFlashcardOpen){
     document.getElementById("studentFlashcardOverlay")?.remove();
     window.studentFlashcardOpen=false;
