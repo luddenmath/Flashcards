@@ -237,6 +237,7 @@ flex-direction:column;
     font-weight:bold;
     padding:2px;
     box-sizing:border-box;
+    pointer-events:none;
 }
 
 
@@ -1201,8 +1202,7 @@ console.log(
 
 
 function update(){
-label.style.display="none";
-label.textContent="";
+
     
 document
 .querySelectorAll("#matchNames div")
@@ -1223,7 +1223,7 @@ cell.querySelector(".matchLabel");
 
 label.innerHTML="";
 
-label.style.display="flex";
+label.style.display="none";
 
 
 
@@ -1257,7 +1257,7 @@ label.dataset.id=id;
 label.draggable=true;
 
 
-label.style.display="block";
+label.style.display="flex";
 
 
 
