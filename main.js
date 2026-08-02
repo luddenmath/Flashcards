@@ -109,7 +109,7 @@ classes.forEach((c,i)=>{
 
 const label=document.createElement("label");
 
-label.style.display="block";
+label.style.display="flex";
 
 label.innerHTML=`
 
@@ -219,6 +219,24 @@ cursor:pointer;
 display:flex;
 flex-direction:column;
 
+}
+
+.matchLabel{
+    position:absolute;
+    bottom:0;
+    left:0;
+    width:100%;
+    height:50%;
+    background:white;
+    color:black;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    overflow:hidden;
+    font-weight:bold;
+    padding:2px;
+    box-sizing:border-box;
 }
 
 
@@ -840,14 +858,11 @@ position:absolute;
 right:10px;
 top:10px;
 width:220px;
-max-height:80%;
 background:white;
 color:black;
 padding:10px;
 overflow:auto;
 z-index:10;
-border-radius:8px;
-box-shadow:0 5px 15px black;
 ">
 
 <b>Incorrect</b>
@@ -990,28 +1005,7 @@ display:block;
 ">
 
 
-<div class="matchLabel"
-
-style="
-position:absolute;
-bottom:0;
-left:0;
-width:100%;
-height:50%;
-box-sizing:border-box;
-background:white;
-color:black;
-padding:2px;
-display:none;
-text-align:center;
-overflow:hidden;
-font-size:clamp(8px,1vw,16px);
-align-items:center;
-justify-content:center;
-line-height:1.1;
-">
-
-</div>
+<div class="matchLabel"></div>
 
 `;
 cell.onclick=()=>{
@@ -1207,7 +1201,9 @@ console.log(
 
 
 function update(){
-
+label.style.display="none";
+label.textContent="";
+    
 document
 .querySelectorAll("#matchNames div")
 .forEach(tile=>{
@@ -1246,8 +1242,13 @@ s=>s.id===id
 
 
 
-label.textContent =
-student.name;
+label.textContent = student.name;
+
+label.style.fontSize = 
+Math.min(
+    cell.clientWidth / (student.name.length * 0.55),
+    cell.clientHeight * 0.18
+) + "px";
 
 
 label.dataset.id=id;
