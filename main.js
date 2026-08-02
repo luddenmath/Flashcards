@@ -237,7 +237,7 @@ flex-direction:column;
     font-weight:bold;
     padding:2px;
     box-sizing:border-box;
-    pointer-events:none;
+   // pointer-events:none;
 }
 
 
