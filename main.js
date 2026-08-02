@@ -1,9 +1,5 @@
-(async function(){
- //2
-    if(sessionStorage.getItem("flashcardReturn")){
-    sessionStorage.removeItem("flashcardReturn");
-}
-
+(function(){
+//4
 if(window.studentFlashcardOpen){
     document.getElementById("studentFlashcardOverlay")?.remove();
     window.studentFlashcardOpen=false;
@@ -15,68 +11,168 @@ window.studentFlashcardOpen=true;
 
 /* ================= STUDENTS ================= */
 
-async function getStudents() {
+function getRosterStudents(){
 
-    // Already on a roster page
-    if (document.querySelector(".sg-student-link")) {
+    const scripts = [...document.scripts];
 
-        return [...document.querySelectorAll(".sg-student-link")]
-            .map(link => ({
-                id: link.getAttribute("studentid"),
-                name: link.textContent.trim(),
-                photo:
-                    "/TAC/StudentDetailsDrawer/GetStudentPhoto?studentId=" +
-                    encodeURIComponent(link.getAttribute("studentid"))
-            }))
-            .filter(s => s.id && s.name && !/^\d+$/.test(s.name))
-            .sort((a,b)=>a.name.localeCompare(b.name));
-    }
+    const script = scripts.find(s =>
+        s.textContent.includes(
+            "SunGard.Tac.ClassRoster.Init"
+        )
+    );
 
-    // Home page
-    const classes = [...document.querySelectorAll('a[href*="/TAC/ClassRoster?SectionKey="]')]
-        .map(a => {
-            const url = new URL(a.href);
 
-            return {
-                name: a.textContent.trim(),
-                url: a.href,
-                period: url.searchParams.get("Periods")
-            };
-        })
-        .filter(c=>c.name);
-
-    if(!classes.length){
-        alert("No classes found.");
+    if(!script){
+        console.log("Roster init not found");
         return [];
     }
 
-    let menu =
-        "Choose a class:\n\n";
 
-    classes.forEach((c,i)=>{
-        menu += `${i+1}. Period ${c.period} - ${c.name}\n`;
-    });
+    const text = script.textContent;
 
-    const choice = parseInt(prompt(menu),10);
 
-    if(isNaN(choice) || choice<1 || choice>classes.length)
+    const start =
+        text.indexOf(
+            "SunGard.Tac.ClassRoster.Init("
+        );
+
+
+    const after =
+        text.substring(start);
+
+
+    /*
+      Find arrays inside Init()
+      The student array is the first large array
+      after the class object.
+    */
+
+    const arrays = [];
+
+    let depth=0;
+    let inString=false;
+    let quote="";
+
+
+    for(let i=0;i<after.length;i++){
+
+        const c=after[i];
+
+
+        if(inString){
+
+            if(c===quote && after[i-1]!=="\\"){
+                inString=false;
+            }
+
+            continue;
+        }
+
+
+        if(c==="'" || c==='"'){
+            inString=true;
+            quote=c;
+            continue;
+        }
+
+
+        if(c==="["){
+
+            let startArray=i;
+            let d=1;
+
+            for(let j=i+1;j<after.length;j++){
+
+                if(after[j]==="[")
+                    d++;
+
+                if(after[j]==="]")
+                    d--;
+
+
+                if(d===0){
+
+                    arrays.push(
+                        after.substring(
+                            startArray,
+                            j+1
+                        )
+                    );
+
+                    i=j;
+                    break;
+
+                }
+
+            }
+
+        }
+
+    }
+
+
+    console.log("Arrays found:", arrays.length);
+
+
+    /*
+       Find the array containing StudentId
+    */
+
+    const rosterArray =
+        arrays.find(a =>
+            a.includes('"StudentId"')
+        );
+
+
+    if(!rosterArray){
+        console.log("No student array found");
         return [];
+    }
 
-  // Navigate to selected class
-sessionStorage.setItem("flashcardReturn", "true");
-sessionStorage.setItem("flashcardClass", classes[choice-1].url);
 
-window.location.href = classes[choice-1].url;
+    const data =
+        JSON.parse(rosterArray);
 
-return [];
+
+    return data.map(s=>({
+
+        id:s.StudentId,
+
+        name:
+            s.StudentNameLastFirst,
+
+        photo:
+            "/TAC/StudentDetailsDrawer/GetStudentPhoto?studentId="
+            + encodeURIComponent(s.StudentId)
+
+    }))
+    .filter(s=>s.id && s.name)
+    .sort((a,b)=>
+        a.name.localeCompare(b.name)
+    );
 
 }
 
-const students = await getStudents();
+
+
+const students =
+    getRosterStudents();
+
+
+console.log(
+    "STUDENTS:",
+    students
+);
+
 
 if(!students.length){
-    alert("No students found.");
+
+    alert(
+        "No students found in roster"
+    );
+
     return;
+
 }
 
 
