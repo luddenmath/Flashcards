@@ -1113,52 +1113,81 @@ imagesDiv.appendChild(cell);
 
 requestAnimationFrame(()=>{
 
-const count = studentsForGame.length;
 
 const width = imagesDiv.clientWidth;
 const height = imagesDiv.clientHeight;
 
 
-/* available area per student */
-const areaPerStudent =
-    (width * height) / count;
+const n = studentsForGame.length;
 
 
-/* square image size */
-let size =
-    Math.floor(
-        Math.sqrt(areaPerStudent)
+/*
+Find best columns.
+Try every possible number of columns
+and choose the largest square size.
+*/
+
+let best = {
+    size:0,
+    cols:1,
+    rows:n
+};
+
+
+for(let cols=1; cols<=n; cols++){
+
+
+    const rows = Math.ceil(n / cols);
+
+
+    const gap = 5;
+
+
+    const size = Math.floor(
+        Math.min(
+            (width - (cols-1)*gap) / cols,
+            (height - (rows-1)*gap) / rows
+        )
     );
 
 
-/* leave room for gaps */
-size = Math.max(size - 5, 50);
+    if(size > best.size){
+
+        best = {
+            size,
+            cols,
+            rows
+        };
+
+    }
+
+}
 
 
 
-/* how many columns fit */
-const cols =
-    Math.floor(
-        width / (size + 5)
-    );
-
-
-const rows =
-    Math.ceil(
-        count / cols
-    );
-
-
+/*
+Apply winning layout
+*/
 
 imagesDiv.style.gridTemplateColumns =
-`repeat(${cols}, ${size}px)`;
+`repeat(${best.cols}, ${best.size}px)`;
 
 
 imagesDiv.style.gridTemplateRows =
-`repeat(${rows}, ${size}px)`;
+`repeat(${best.rows}, ${best.size}px)`;
+
+
+console.log(
+    "MATCH GRID:",
+    best.cols,
+    "columns",
+    best.rows,
+    "rows",
+    best.size+"px"
+);
+
 
 });
-
 
 
 
