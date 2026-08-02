@@ -775,7 +775,7 @@ style="
 display:flex;
 flex-wrap:wrap;
 justify-content:center;
-align-content:center;
+align-content:start;
 
 gap:5px;
 
@@ -1113,29 +1113,41 @@ imagesDiv.appendChild(cell);
 
 requestAnimationFrame(()=>{
 
-const cols = Math.min(
-    5 * selectedClasses.length,
-    20
-);
-
-const rows = Math.ceil(
-    studentsForGame.length / cols
-);
-
+const count = studentsForGame.length;
 
 const width = imagesDiv.clientWidth;
 const height = imagesDiv.clientHeight;
 
 
-const gap = 5;
+/* available area per student */
+const areaPerStudent =
+    (width * height) / count;
 
-const size =
+
+/* square image size */
+let size =
     Math.floor(
-        Math.min(
-            (width - (cols - 1) * gap) / cols,
-            (height - (rows - 1) * gap) / rows
-        )
+        Math.sqrt(areaPerStudent)
     );
+
+
+/* leave room for gaps */
+size = Math.max(size - 5, 50);
+
+
+
+/* how many columns fit */
+const cols =
+    Math.floor(
+        width / (size + 5)
+    );
+
+
+const rows =
+    Math.ceil(
+        count / cols
+    );
+
 
 
 imagesDiv.style.gridTemplateColumns =
@@ -1144,7 +1156,6 @@ imagesDiv.style.gridTemplateColumns =
 
 imagesDiv.style.gridTemplateRows =
 `repeat(${rows}, ${size}px)`;
-
 
 });
 
