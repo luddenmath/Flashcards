@@ -1,5 +1,5 @@
 (function(){
-//5
+//6
 if(window.studentFlashcardOpen){
     document.getElementById("studentFlashcardOverlay")?.remove();
     window.studentFlashcardOpen=false;
@@ -11,153 +11,142 @@ window.studentFlashcardOpen=true;
 
 /* ================= STUDENTS ================= */
 
-async function getRosterStudents(){
-
-    const section =
-        prompt("Enter SectionKey");
-
-
-    const html =
-        await fetch(
-            "/TAC/ClassRoster?SectionKey=" +
-            section +
-            "&CourseSession=1&Course=2811-4"
-        )
-        .then(r=>r.text());
+function decodeName(str){
+    return (str || "")
+        .replace(/&#39;|&apos;|&#x27;/g,"'")
+        .trim();
+}
 
 
-    const start =
-        html.indexOf(
-            "SunGard.Tac.ClassRoster.Init("
-        );
+let students=[];
 
 
-    if(start===-1){
+/*
+Find roster data embedded in page
+*/
 
-        console.log("Roster Init not found");
-        return [];
+const pageHTML = document.documentElement.innerHTML;
+
+
+const start =
+pageHTML.indexOf("SunGard.Tac.ClassRoster.Init(");
+
+
+if(start === -1){
+
+    alert("Could not find roster data");
+    return;
+
+}
+
+
+const after =
+pageHTML.substring(start);
+
+
+/*
+Find first array after Init(
+*/
+
+const arrayStart =
+after.indexOf("[");
+
+
+let depth=0;
+let end=-1;
+let inString=false;
+let quote="";
+
+
+for(let i=arrayStart;i<after.length;i++){
+
+    const c=after[i];
+
+
+    if(inString){
+
+        if(c===quote && after[i-1]!=="\\"){
+            inString=false;
+        }
+
+        continue;
+    }
+
+
+    if(c==="\"" || c==="'"){
+
+        inString=true;
+        quote=c;
+        continue;
 
     }
 
 
-    const after =
-        html.substring(start);
+    if(c==="[")
+        depth++;
 
 
+    if(c==="]"){
 
-    const arrayStart =
-        after.indexOf("[");
+        depth--;
 
+        if(depth===0){
 
-    let depth=0;
-    let inString=false;
-    let quote="";
-
-    let end=-1;
-
-
-    for(
-        let i=arrayStart;
-        i<after.length;
-        i++
-    ){
-
-        const c=after[i];
-
-
-        if(inString){
-
-            if(
-                c===quote &&
-                after[i-1]!=="\\"
-            ){
-                inString=false;
-            }
-
-            continue;
-
-        }
-
-
-        if(c==="\"" || c==="'"){
-
-            inString=true;
-            quote=c;
-            continue;
-
-        }
-
-
-        if(c==="[")
-            depth++;
-
-
-        if(c==="]"){
-
-            depth--;
-
-            if(depth===0){
-
-                end=i+1;
-                break;
-
-            }
+            end=i+1;
+            break;
 
         }
 
     }
-
-
-    const json =
-        after.substring(
-            arrayStart,
-            end
-        );
-
-
-    const roster =
-        JSON.parse(json);
-
-
-    console.log(
-        "Loaded students:",
-        roster.length
-    );
-
-
-    return roster
-    .map(s=>({
-
-        id:s.StudentId,
-
-        name:s.StudentNameLastFirst,
-
-        photo:
-        "/TAC/StudentDetailsDrawer/GetStudentPhoto?studentId="
-        +
-        encodeURIComponent(
-            s.StudentId
-        )
-
-    }))
-    .filter(s=>s.id && s.name)
-    .sort(
-        (a,b)=>
-        a.name.localeCompare(b.name)
-    );
 
 }
 
 
 
-const students =
-    await getRosterStudents();
+try{
+
+    const rosterJSON =
+        after.substring(arrayStart,end);
 
 
-window.rosterStudents = students;
+    const roster =
+        JSON.parse(rosterJSON);
 
 
-console.log(students);
+
+    students =
+        roster.map(s=>({
+
+            id:s.StudentId,
+
+            name:
+            decodeName(
+                s.StudentNameLastFirst
+            ),
+
+            photo:
+            "/TAC/StudentDetailsDrawer/GetStudentPhoto?studentId=" +
+            encodeURIComponent(s.StudentId)
+
+        }))
+        .filter(s=>s.id && s.name)
+        .sort((a,b)=>
+            a.name.localeCompare(b.name)
+        );
+
+
+}
+catch(e){
+
+    console.error(e);
+    alert("Could not parse roster");
+
+}
+
+
+
+console.log("ROSTER:",students);
+
 
 
 if(!students.length){
