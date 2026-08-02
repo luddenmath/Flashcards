@@ -1,5 +1,5 @@
 (function(){
-//4
+//5
 if(window.studentFlashcardOpen){
     document.getElementById("studentFlashcardOverlay")?.remove();
     window.studentFlashcardOpen=false;
@@ -11,98 +11,95 @@ window.studentFlashcardOpen=true;
 
 /* ================= STUDENTS ================= */
 
-function getRosterStudents(){
+async function getRosterStudents(){
 
-    const scripts = [...document.scripts];
+    const section =
+        prompt("Enter SectionKey");
 
-    const script = scripts.find(s =>
-        s.textContent.includes(
-            "SunGard.Tac.ClassRoster.Init"
+
+    const html =
+        await fetch(
+            "/TAC/ClassRoster?SectionKey=" +
+            section +
+            "&CourseSession=1&Course=2811-4"
         )
-    );
-
-
-    if(!script){
-        console.log("Roster init not found");
-        return [];
-    }
-
-
-    const text = script.textContent;
+        .then(r=>r.text());
 
 
     const start =
-        text.indexOf(
+        html.indexOf(
             "SunGard.Tac.ClassRoster.Init("
         );
 
 
+    if(start===-1){
+
+        console.log("Roster Init not found");
+        return [];
+
+    }
+
+
     const after =
-        text.substring(start);
+        html.substring(start);
 
 
-    /*
-      Find arrays inside Init()
-      The student array is the first large array
-      after the class object.
-    */
 
-    const arrays = [];
+    const arrayStart =
+        after.indexOf("[");
+
 
     let depth=0;
     let inString=false;
     let quote="";
 
+    let end=-1;
 
-    for(let i=0;i<after.length;i++){
+
+    for(
+        let i=arrayStart;
+        i<after.length;
+        i++
+    ){
 
         const c=after[i];
 
 
         if(inString){
 
-            if(c===quote && after[i-1]!=="\\"){
+            if(
+                c===quote &&
+                after[i-1]!=="\\"
+            ){
                 inString=false;
             }
 
             continue;
+
         }
 
 
-        if(c==="'" || c==='"'){
+        if(c==="\"" || c==="'"){
+
             inString=true;
             quote=c;
             continue;
+
         }
 
 
-        if(c==="["){
-
-            let startArray=i;
-            let d=1;
-
-            for(let j=i+1;j<after.length;j++){
-
-                if(after[j]==="[")
-                    d++;
-
-                if(after[j]==="]")
-                    d--;
+        if(c==="[")
+            depth++;
 
 
-                if(d===0){
+        if(c==="]"){
 
-                    arrays.push(
-                        after.substring(
-                            startArray,
-                            j+1
-                        )
-                    );
+            depth--;
 
-                    i=j;
-                    break;
+            if(depth===0){
 
-                }
+                end=i+1;
+                break;
 
             }
 
@@ -111,43 +108,41 @@ function getRosterStudents(){
     }
 
 
-    console.log("Arrays found:", arrays.length);
-
-
-    /*
-       Find the array containing StudentId
-    */
-
-    const rosterArray =
-        arrays.find(a =>
-            a.includes('"StudentId"')
+    const json =
+        after.substring(
+            arrayStart,
+            end
         );
 
 
-    if(!rosterArray){
-        console.log("No student array found");
-        return [];
-    }
+    const roster =
+        JSON.parse(json);
 
 
-    const data =
-        JSON.parse(rosterArray);
+    console.log(
+        "Loaded students:",
+        roster.length
+    );
 
 
-    return data.map(s=>({
+    return roster
+    .map(s=>({
 
         id:s.StudentId,
 
-        name:
-            s.StudentNameLastFirst,
+        name:s.StudentNameLastFirst,
 
         photo:
-            "/TAC/StudentDetailsDrawer/GetStudentPhoto?studentId="
-            + encodeURIComponent(s.StudentId)
+        "/TAC/StudentDetailsDrawer/GetStudentPhoto?studentId="
+        +
+        encodeURIComponent(
+            s.StudentId
+        )
 
     }))
     .filter(s=>s.id && s.name)
-    .sort((a,b)=>
+    .sort(
+        (a,b)=>
         a.name.localeCompare(b.name)
     );
 
@@ -156,20 +151,18 @@ function getRosterStudents(){
 
 
 const students =
-    getRosterStudents();
+    await getRosterStudents();
 
 
-console.log(
-    "STUDENTS:",
-    students
-);
+window.rosterStudents = students;
+
+
+console.log(students);
 
 
 if(!students.length){
 
-    alert(
-        "No students found in roster"
-    );
+    alert("No students found");
 
     return;
 
