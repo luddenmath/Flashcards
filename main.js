@@ -1,4 +1,4 @@
-(function(){
+(async function(){
 //7 
 if(window.studentFlashcardOpen){
     document.getElementById("studentFlashcardOverlay")?.remove();
