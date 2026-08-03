@@ -1415,15 +1415,6 @@ gap:40px;
 ">
 
 
-<div class="sfOptions"
-style="
-display:flex;
-flex-direction:column;
-gap:15px;
-width:300px;
-">
-</div>
-
 
 <div style="
 text-align:center;
@@ -1452,6 +1443,15 @@ src="${current.photo}">
 
 </div>
 
+
+<div class="sfOptions"
+style="
+display:flex;
+flex-direction:column;
+gap:15px;
+width:300px;
+">
+</div>
 
 </div>
 
