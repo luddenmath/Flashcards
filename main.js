@@ -275,9 +275,9 @@ text-align:center;
 
 .sfOptions{
 
-display:grid;
-gap:10px;
-margin-top:20px;
+display:flex;
+flex-direction:column;
+gap:15px;
 
 }
 
@@ -1406,11 +1406,32 @@ let choices=shuffle([
 box.innerHTML=`
 
 <div style="
-text-align:center;
-margin-bottom:15px;
+display:flex;
+height:100%;
+width:100%;
+align-items:center;
+justify-content:center;
+gap:40px;
 ">
 
+
+<div class="sfOptions"
+style="
+display:flex;
+flex-direction:column;
+gap:15px;
+width:300px;
+">
+</div>
+
+
 <div style="
+text-align:center;
+">
+
+
+<div 
+style="
 font-size:42px;
 font-weight:bold;
 height:55px;
@@ -1418,18 +1439,21 @@ height:55px;
 id="sfAnswerName">
 </div>
 
+
 <img loading="lazy"
 style="
 width:350px;
 height:350px;
 object-fit:cover;
-border-radius:15px;"
+border-radius:15px;
+"
 src="${current.photo}">
+
 
 </div>
 
 
-<div class="sfOptions"></div>
+</div>
 
 `;
 
